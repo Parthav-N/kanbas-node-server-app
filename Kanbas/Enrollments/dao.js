@@ -6,9 +6,24 @@ export async function findCoursesForUser(userId) {
 }
 
 export async function findUsersForCourse(courseId) {
-  const enrollments = await model.find({ course: courseId }).populate("user");
-  return enrollments.map((enrollment) => enrollment.user);
+  try {
+    // Fetch enrollments and populate the `user` field
+    const enrollments = await model.find({ course: courseId }).populate("user");
+
+    // Ensure enrollments is an array
+    if (!Array.isArray(enrollments)) {
+      console.error("Expected enrollments to be an array, got:", enrollments);
+      return []; // Return an empty array if it's not
+    }
+
+    // Map and return the `user` objects
+    return enrollments.map((enrollment) => enrollment.user);
+  } catch (error) {
+    console.error("Error in findUsersForCourse:", error);
+    throw error; // Propagate the error for higher-level handling
+  }
 }
+
 
 export function enrollUserInCourse(user, course) {
   return model.create({ user, course });
